@@ -1,0 +1,20 @@
+{
+  "name": "nnts",
+  "version": "1.0.0",
+  "description": "A Neural Network for Reinforcement Learning in TypeScript",
+  "main": "/network/neuralnetwork.ts",
+  "scripts": {
+    "test": ""
+  },
+  "keywords": [
+    "neuralnetwork",
+    "ai",
+    "reinforcement",
+    "learning",
+    "artificial",
+    "intelligence",
+    "typescript"
+  ],
+  "author": "Marcel Thiele",
+  "license": "ISC"
+}
