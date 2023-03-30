@@ -4,7 +4,7 @@ export class GeneticAlgoFactory {
   generation = 1;
   prevAvgScore = 0;
   avgScore = 0;
-  agentsAlive = 0;
+  neuralNetsAlive = 0;
   prevHighScore = 0;
 
   prevHighScoreArray: number[] = [0];
@@ -12,123 +12,123 @@ export class GeneticAlgoFactory {
 
   allTimeBest: NeuralNetwork[] = [];
 
-  constructor(private numOfAgents = 200) {}
+  constructor(private numOfNeuralNets = 200) {}
 
-  getAvgScore(agents: NeuralNetwork[]) {
+  getAvgScore(neuralNets: NeuralNetwork[]) {
     let sumOfScore = 0;
 
-    for (let agent of agents) {
-      sumOfScore += agent.score;
+    for (let neuralNet of neuralNets) {
+      sumOfScore += neuralNet.score;
     }
 
-    this.avgScore = sumOfScore / agents.length;
+    this.avgScore = sumOfScore / neuralNets.length;
 
     // console.log("Average Score: " + this.avgScore);
     return this.avgScore;
   }
 
-  computeNextGeneration(agents: NeuralNetwork[]) {
-    this.prevAvgScore = this.getAvgScore(agents);
+  computeNextGeneration(neuralNets: NeuralNetwork[]) {
+    this.prevAvgScore = this.getAvgScore(neuralNets);
     this.avgScoreArray.push(this.prevAvgScore);
     this.prevHighScoreArray.push();
 
-    let agentsToKeep = 20;
-    let numOfRandomAgents = 20;
-    let numOfMutatedAgentsPerATB = 2;
+    let neuralNetsToKeep = 20;
+    let numOfRandomNeuralNets = 20;
+    let numOfMutatedNeuralNetsPerATB = 2;
     let numOfCrossovers = 50;
     // console.log('fittest: ' + JSON.stringify(fittest.probabilities));
 
-    let fittestAIs: NeuralNetwork[] = this.getFittestAIs(agents, agentsToKeep);
-    this.updateBestAgents(fittestAIs);
+    let fittestAIs: NeuralNetwork[] = this.getFittestAIs(neuralNets, neuralNetsToKeep);
+    this.updateBestNeuralNets(fittestAIs);
 
     let fittest = this.getRespawnProbabilitiesAndSum(
       [...fittestAIs, ...this.allTimeBest],
-      agentsToKeep
+      neuralNetsToKeep
     );
     fittestAIs = fittest.newAIs;
 
-    agents = [];
+    neuralNets = [];
 
-    // Copy previous Best Agents to Next generation
-    for (let i = 0; i < agentsToKeep; i++) {
+    // Copy previous Best NeuralNets to Next generation
+    for (let i = 0; i < neuralNetsToKeep; i++) {
       let newAi = fittestAIs[i].deepCopy();
-      agents.push(newAi);
+      neuralNets.push(newAi);
     }
 
     //Copy allTimeBest
     for (let i = 0; i < this.allTimeBest.length; i++) {
       let newAi = this.allTimeBest[i].deepCopy();
 
-      //Also put a slightly mutated agent of that alltimebest agent
-      for (let j = 0; j < numOfMutatedAgentsPerATB; j++) {
+      //Also put a slightly mutated neuralNet of that alltimebest neuralNet
+      for (let j = 0; j < numOfMutatedNeuralNetsPerATB; j++) {
         let newMutatedAi = newAi.deepCopy();
         newMutatedAi.mutate(
-          (0.05 * (j / numOfMutatedAgentsPerATB)) / ((1 / 1.5) * this.generation)
+          (0.05 * (j / numOfMutatedNeuralNetsPerATB)) / ((1 / 1.5) * this.generation)
         );
-        agents.push(newMutatedAi);
+        neuralNets.push(newMutatedAi);
       }
     }
 
     //Do Crossovers
     for (let i = 0; i < numOfCrossovers; i++) {
-      let agentA = agents[Math.floor(Math.random() * (agents.length - 1))];
-      let agentB = agents[Math.floor(Math.random() * (agents.length - 1))];
+      let neuralNetA = neuralNets[Math.floor(Math.random() * (neuralNets.length - 1))];
+      let neuralNetB = neuralNets[Math.floor(Math.random() * (neuralNets.length - 1))];
 
-      let newAi = this.crossover(agentA, agentB);
+      let newAi = this.crossover(neuralNetA, neuralNetB);
 
-      agents.push(newAi);
+      neuralNets.push(newAi);
     }
 
-    //Generate some random agents
-    for (let i = 0; i < numOfRandomAgents; i++) {
+    //Generate some random neuralNets
+    for (let i = 0; i < numOfRandomNeuralNets; i++) {
       let newAI = new NeuralNetwork(fittestAIs[0].getNumOfNeurons());
-      agents.push(newAI);
+      neuralNets.push(newAI);
     }
 
-    //Generate and mutate new Agents from
-    for (let i = agents.length; i < this.numOfAgents; i++) {
+    //Generate and mutate new NeuralNets from
+    for (let i = neuralNets.length; i < this.numOfNeuralNets; i++) {
       let probabilityIndex = this.getProbabilityIndex(
         fittest.newAIs,
         fittest.probabilities
       );
       let newAi = fittestAIs[probabilityIndex].deepCopy();
       newAi.mutate(
-        (0.5 * (i / this.numOfAgents)) / (0.2 * this.generation)
+        (0.5 * (i / this.numOfNeuralNets)) / (0.2 * this.generation)
       );
-      agents.push(newAi);
+      neuralNets.push(newAi);
     }
 
     this.generation++;
 
-    return agents;
+    return neuralNets;
   }
 
-  getFittestAIs(agents: NeuralNetwork[], topX: number) {
-    let newAgents: NeuralNetwork[] = [];
+  getFittestAIs(neuralNets: NeuralNetwork[], topX: number) {
+    let newNeuralNets: NeuralNetwork[] = [];
 
     for (let i = 0; i < topX; i++) {
-      newAgents.push(agents[i]);
+      newNeuralNets.push(neuralNets[i]);
     }
 
-    for (let agent of agents) {
+    for (let neuralNet of neuralNets) {
       let weakestIndex = 0;
-      let weakest = newAgents[weakestIndex];
-      for (let i = 0; i < newAgents.length; i++) {
+      let weakest = newNeuralNets[weakestIndex];
+      for (let i = 0; i < newNeuralNets.length; i++) {
         if (
-          newAgents[i].score >= weakest.score &&
-          newAgents[i].id != weakest.id
+          newNeuralNets[i].score >= weakest.score &&
+          newNeuralNets[i].id != weakest.id
         ) {
-          weakest = newAgents[i];
+          weakest = newNeuralNets[i];
           weakestIndex = i;
         }
       }
 
-      if (agent.score > weakest.score && agent.id != weakest.id) {
-        newAgents[weakestIndex] = agent;
+      if (neuralNet.score > weakest.score && neuralNet.id != weakest.id) {
+        newNeuralNets[weakestIndex] = neuralNet;
       }
     }
 
-    return newAgents;
+    return newNeuralNets;
   }
 
   getRespawnProbabilitiesAndSum(neuralNets: NeuralNetwork[], topX: number) {
@@ -150,48 +150,48 @@ export class GeneticAlgoFactory {
     };
   }
 
-  updateBestAgents(newFittestAgents: NeuralNetwork[]) {
+  updateBestNeuralNets(newFittestNeuralNets: NeuralNetwork[]) {
     if (this.allTimeBest.length == 0) {
-      this.allTimeBest = newFittestAgents;
+      this.allTimeBest = newFittestNeuralNets;
       return;
     }
 
-    for (let newAgent of newFittestAgents) {
-      let weakestAgent = this.allTimeBest[0];
+    for (let newNeuralNet of newFittestNeuralNets) {
+      let weakestNeuralNet = this.allTimeBest[0];
       let weakestIndex = 0;
       // console.log("---------");
 
       for (let i = 0; i < this.allTimeBest.length; i++) {
         if (
-          this.allTimeBest[i].score <= weakestAgent.score &&
-          this.allTimeBest[i].id != weakestAgent.id
+          this.allTimeBest[i].score <= weakestNeuralNet.score &&
+          this.allTimeBest[i].id != weakestNeuralNet.id
         ) {
-          weakestAgent = this.allTimeBest[i];
+          weakestNeuralNet = this.allTimeBest[i];
           weakestIndex = i;
-          // console.log("found new weakest: " + weakestAgent.id);
+          // console.log("found new weakest: " + weakestNeuralNet.id);
         }
       }
       // console.log("---------");
 
-      if (this.allTimeBest[weakestIndex].score < newAgent.score) {
-        if (!(this.allTimeBest[weakestIndex].id == newAgent.id))
-          this.allTimeBest[weakestIndex] = newAgent;
+      if (this.allTimeBest[weakestIndex].score < newNeuralNet.score) {
+        if (!(this.allTimeBest[weakestIndex].id == newNeuralNet.id))
+          this.allTimeBest[weakestIndex] = newNeuralNet;
       }
     }
 
-    for (let agent of this.allTimeBest) {
-      agent.id = agent.id.replace("ATB - ", "");
-      agent.id = "ATB - " + agent.id;
+    for (let neuralNet of this.allTimeBest) {
+      neuralNet.id = neuralNet.id.replace("ATB - ", "");
+      neuralNet.id = "ATB - " + neuralNet.id;
     }
   }
 
-  getProbabilityIndex(fittestAgents: NeuralNetwork[], probabilities: number[]) {
+  getProbabilityIndex(fittestNeuralNets: NeuralNetwork[], probabilities: number[]) {
     let random = Math.random();
-    for (let j = 0; j < fittestAgents.length; j++) {
+    for (let j = 0; j < fittestNeuralNets.length; j++) {
       if (random <= probabilities[j]) return j;
     }
 
-    return fittestAgents.length - 1;
+    return fittestNeuralNets.length - 1;
   }
 
   setHighScore(score: number) {
