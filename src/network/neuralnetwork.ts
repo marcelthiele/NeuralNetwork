@@ -6,6 +6,9 @@ export class NeuralNetwork {
 
   private numOfNeurons: number[];
 
+  public score = 0;
+  public id = "";
+
   constructor(numOfNeurons: number[], layers?: Layer[]) {
     if (layers == undefined) {
       // Create new layers

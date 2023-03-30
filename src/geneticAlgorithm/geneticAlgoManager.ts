@@ -1,5 +1,4 @@
 import { NeuralNetwork } from "../network/neuralnetwork";
-import { GeneticRequirement } from "./requirements";
 
 export class GeneticAlgoFactory {
   generation = 1;
@@ -11,11 +10,11 @@ export class GeneticAlgoFactory {
   prevHighScoreArray: number[] = [0];
   avgScoreArray: number[] = [0];
 
-  allTimeBest: GeneticRequirement[] = [];
+  allTimeBest: NeuralNetwork[] = [];
 
   constructor(private numOfAgents = 200) {}
 
-  getAvgScore(agents: GeneticRequirement[]) {
+  getAvgScore(agents: NeuralNetwork[]) {
     let sumOfScore = 0;
 
     for (let agent of agents) {
@@ -28,7 +27,7 @@ export class GeneticAlgoFactory {
     return this.avgScore;
   }
 
-  computeNextGeneration(agents: GeneticRequirement[]) {
+  computeNextGeneration(agents: NeuralNetwork[]) {
     this.prevAvgScore = this.getAvgScore(agents);
     this.avgScoreArray.push(this.prevAvgScore);
     this.prevHighScoreArray.push();
@@ -39,35 +38,34 @@ export class GeneticAlgoFactory {
     let numOfCrossovers = 50;
     // console.log('fittest: ' + JSON.stringify(fittest.probabilities));
 
-    let fittestAgents: GeneticRequirement[] = this.getFittestAgents(agents, agentsToKeep);
-    this.updateBestAgents(fittestAgents);
+    let fittestAIs: NeuralNetwork[] = this.getFittestAIs(agents, agentsToKeep);
+    this.updateBestAgents(fittestAIs);
 
     let fittest = this.getRespawnProbabilitiesAndSum(
-      [...fittestAgents, ...this.allTimeBest],
+      [...fittestAIs, ...this.allTimeBest],
       agentsToKeep
     );
-    fittestAgents = fittest.newAgents;
+    fittestAIs = fittest.newAIs;
 
     agents = [];
 
     // Copy previous Best Agents to Next generation
     for (let i = 0; i < agentsToKeep; i++) {
-      let newAi = fittestAgents[i].brain.deepCopy();
-      let newAgent = new GeneticRequirement("f" + i, 0, newAi);
-      agents.push(newAgent);
+      let newAi = fittestAIs[i].deepCopy();
+      agents.push(newAi);
     }
 
     //Copy allTimeBest
     for (let i = 0; i < this.allTimeBest.length; i++) {
-      let newAi = this.allTimeBest[i].brain.deepCopy();
+      let newAi = this.allTimeBest[i].deepCopy();
 
       //Also put a slightly mutated agent of that alltimebest agent
       for (let j = 0; j < numOfMutatedAgentsPerATB; j++) {
-        let newAgent = new GeneticRequirement(this.allTimeBest[i].id + "*", 0, newAi.deepCopy());
-        newAgent.brain.mutate(
+        let newMutatedAi = newAi.deepCopy();
+        newMutatedAi.mutate(
           (0.05 * (j / numOfMutatedAgentsPerATB)) / ((1 / 1.5) * this.generation)
         );
-        agents.push(newAgent);
+        agents.push(newMutatedAi);
       }
     }
 
@@ -77,29 +75,27 @@ export class GeneticAlgoFactory {
       let agentB = agents[Math.floor(Math.random() * (agents.length - 1))];
 
       let newAi = this.crossover(agentA, agentB);
-      let newAgent = new GeneticRequirement("crossover - " + i, 0, newAi);
 
-      agents.push(newAgent);
+      agents.push(newAi);
     }
 
     //Generate some random agents
     for (let i = 0; i < numOfRandomAgents; i++) {
-      let newAgent = new GeneticRequirement("Rndm - " + i, 0, new NeuralNetwork(agents[0].brain.getNumOfNeurons()));
-      agents.push(newAgent);
+      let newAI = new NeuralNetwork(fittestAIs[0].getNumOfNeurons());
+      agents.push(newAI);
     }
 
     //Generate and mutate new Agents from
     for (let i = agents.length; i < this.numOfAgents; i++) {
       let probabilityIndex = this.getProbabilityIndex(
-        fittest.newAgents,
+        fittest.newAIs,
         fittest.probabilities
       );
-      let newAi = fittestAgents[probabilityIndex].brain.deepCopy();
-      let newAgent = new GeneticRequirement(""+i,0,newAi);
-      newAgent.brain.mutate(
+      let newAi = fittestAIs[probabilityIndex].deepCopy();
+      newAi.mutate(
         (0.5 * (i / this.numOfAgents)) / (0.2 * this.generation)
       );
-      agents.push(newAgent);
+      agents.push(newAi);
     }
 
     this.generation++;
@@ -107,8 +103,8 @@ export class GeneticAlgoFactory {
     return agents;
   }
 
-  getFittestAgents(agents: GeneticRequirement[], topX: number) {
-    let newAgents: GeneticRequirement[] = [];
+  getFittestAIs(agents: NeuralNetwork[], topX: number) {
+    let newAgents: NeuralNetwork[] = [];
 
     for (let i = 0; i < topX; i++) {
       newAgents.push(agents[i]);
@@ -135,26 +131,26 @@ export class GeneticAlgoFactory {
     return newAgents;
   }
 
-  getRespawnProbabilitiesAndSum(agents: GeneticRequirement[], topX: number) {
+  getRespawnProbabilitiesAndSum(neuralNets: NeuralNetwork[], topX: number) {
     let probabilities: number[] = [];
 
     let sum = 0;
     for (let i = 0; i < topX; i++) {
-      sum += agents[i].score;
+      sum += neuralNets[i].score;
     }
 
     for (let i = 0; i < topX; i++) {
-      probabilities.push(agents[i].score / sum);
+      probabilities.push(neuralNets[i].score / sum);
     }
 
     return {
-      newAgents: agents,
+      newAIs: neuralNets,
       probabilities: probabilities,
       sumOfScore: sum,
     };
   }
 
-  updateBestAgents(newFittestAgents: GeneticRequirement[]) {
+  updateBestAgents(newFittestAgents: NeuralNetwork[]) {
     if (this.allTimeBest.length == 0) {
       this.allTimeBest = newFittestAgents;
       return;
@@ -189,7 +185,7 @@ export class GeneticAlgoFactory {
     }
   }
 
-  getProbabilityIndex(fittestAgents: GeneticRequirement[], probabilities: number[]) {
+  getProbabilityIndex(fittestAgents: NeuralNetwork[], probabilities: number[]) {
     let random = Math.random();
     for (let j = 0; j < fittestAgents.length; j++) {
       if (random <= probabilities[j]) return j;
@@ -203,8 +199,8 @@ export class GeneticAlgoFactory {
     this.prevHighScoreArray.push(score);
   }
 
-  crossover(agentA: GeneticRequirement, agentB: GeneticRequirement) {
-    return agentA.brain.crossover(agentB.brain);
+  crossover(brainA: NeuralNetwork, brainB: NeuralNetwork) {
+    return brainA.crossover(brainB);
   }
 
 }
