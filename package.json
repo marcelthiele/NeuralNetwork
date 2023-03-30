@@ -10,8 +10,11 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublish": "npm version patch & npm run build",
-    "publish": "npm publish --access=public"
+    "prepublish": "npm run build",
+    "publish": "npm publish --access=public",
+    "publish_patch": "npm version patch",
+    "publish_minor": "npm version minor",
+    "publish_major": "npm version major"
   },
   "keywords": [
     "neuralnetwork",
