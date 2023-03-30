@@ -9,7 +9,9 @@
     "/lib/"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "npm version patch & npm run build",
+    "publish": "npm publish --access=public"
   },
   "keywords": [
     "neuralnetwork",
