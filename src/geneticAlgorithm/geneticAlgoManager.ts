@@ -52,6 +52,7 @@ export class GeneticAlgoFactory {
     // Copy previous Best NeuralNets to Next generation
     for (let i = 0; i < neuralNetsToKeep; i++) {
       let newAi = fittestAIs[i].deepCopy();
+      newAi.id="ATB-"+i;
       neuralNets.push(newAi);
     }
 
@@ -65,6 +66,7 @@ export class GeneticAlgoFactory {
         newMutatedAi.mutate(
           (0.05 * (j / numOfMutatedNeuralNetsPerATB)) / ((1 / 1.5) * this.generation)
         );
+        newMutatedAi.id = "ATB-"+i+"-*";
         neuralNets.push(newMutatedAi);
       }
     }
@@ -75,6 +77,7 @@ export class GeneticAlgoFactory {
       let neuralNetB = neuralNets[Math.floor(Math.random() * (neuralNets.length - 1))];
 
       let newAi = this.crossover(neuralNetA, neuralNetB);
+      newAi.id = "crsvr-"+i;
 
       neuralNets.push(newAi);
     }
@@ -82,6 +85,7 @@ export class GeneticAlgoFactory {
     //Generate some random neuralNets
     for (let i = 0; i < numOfRandomNeuralNets; i++) {
       let newAI = new NeuralNetwork(fittestAIs[0].getNumOfNeurons());
+      newAI.id="rndm-"+i;
       neuralNets.push(newAI);
     }
 
@@ -95,6 +99,7 @@ export class GeneticAlgoFactory {
       newAi.mutate(
         (0.5 * (i / this.numOfNeuralNets)) / (0.2 * this.generation)
       );
+      newAi.id = ""+i;
       neuralNets.push(newAi);
     }
 
