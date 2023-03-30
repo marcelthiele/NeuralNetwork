@@ -2,7 +2,7 @@
   "name": "@marcelthiele/neuralnet-rl",
   "version": "1.0.7",
   "description": "A Neural Network for Reinforcement Learning in TypeScript",
-  "main": "lib/src/network/neuralnetwork.js",
+  "main": "lib/src/network/index.js",
   "type": "module",
   "types": "lib/src/index.d.ts",
   "files": [
