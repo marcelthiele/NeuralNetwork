@@ -117,4 +117,8 @@ export class NeuralNetwork {
       neuron.prevNeurons = prevLayer.neurons;
     }
   }
+
+  getNumOfNeurons(){
+    return this.numOfNeurons;
+  }
 }
