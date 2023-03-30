@@ -5,7 +5,7 @@ export class GeneticAlgoFactory {
   generation = 1;
   prevAvgScore = 0;
   avgScore = 0;
-  birdsAlive = 0;
+  agentsAlive = 0;
   prevHighScore = 0;
 
   prevHighScoreArray: number[] = [0];
@@ -15,187 +15,187 @@ export class GeneticAlgoFactory {
 
   constructor(private numOfAgents = 200) {}
 
-  getAvgScore(birds: GeneticRequirement[]) {
+  getAvgScore(agents: GeneticRequirement[]) {
     let sumOfScore = 0;
 
-    for (let bird of birds) {
-      sumOfScore += bird.score;
+    for (let agent of agents) {
+      sumOfScore += agent.score;
     }
 
-    this.avgScore = sumOfScore / birds.length;
+    this.avgScore = sumOfScore / agents.length;
 
     // console.log("Average Score: " + this.avgScore);
     return this.avgScore;
   }
 
-  computeNextGeneration(birds: GeneticRequirement[]) {
-    this.prevAvgScore = this.getAvgScore(birds);
+  computeNextGeneration(agents: GeneticRequirement[]) {
+    this.prevAvgScore = this.getAvgScore(agents);
     this.avgScoreArray.push(this.prevAvgScore);
     this.prevHighScoreArray.push();
 
-    let birdsToKeep = 20;
-    let numOfRandomBirds = 20;
-    let numOfMutatedBirdsPerATB = 2;
+    let agentsToKeep = 20;
+    let numOfRandomAgents = 20;
+    let numOfMutatedAgentsPerATB = 2;
     let numOfCrossovers = 50;
     // console.log('fittest: ' + JSON.stringify(fittest.probabilities));
 
-    let fittestBirds: GeneticRequirement[] = this.getFittestBirds(birds, birdsToKeep);
-    this.updateBestBirds(fittestBirds);
+    let fittestAgents: GeneticRequirement[] = this.getFittestAgents(agents, agentsToKeep);
+    this.updateBestAgents(fittestAgents);
 
     let fittest = this.getRespawnProbabilitiesAndSum(
-      [...fittestBirds, ...this.allTimeBest],
-      birdsToKeep
+      [...fittestAgents, ...this.allTimeBest],
+      agentsToKeep
     );
-    fittestBirds = fittest.newBirds;
+    fittestAgents = fittest.newAgents;
 
-    birds = [];
+    agents = [];
 
-    // Copy previous Best Birds to Next generation
-    for (let i = 0; i < birdsToKeep; i++) {
-      let newAi = fittestBirds[i].brain.deepCopy();
-      let newBird = new GeneticRequirement("f" + i, 0, newAi);
-      birds.push(newBird);
+    // Copy previous Best Agents to Next generation
+    for (let i = 0; i < agentsToKeep; i++) {
+      let newAi = fittestAgents[i].brain.deepCopy();
+      let newAgent = new GeneticRequirement("f" + i, 0, newAi);
+      agents.push(newAgent);
     }
 
     //Copy allTimeBest
     for (let i = 0; i < this.allTimeBest.length; i++) {
       let newAi = this.allTimeBest[i].brain.deepCopy();
 
-      //Also put a slightly mutated bird of that alltimebest bird
-      for (let j = 0; j < numOfMutatedBirdsPerATB; j++) {
-        let newBird = new GeneticRequirement(this.allTimeBest[i].id + "*", 0, newAi.deepCopy());
-        newBird.brain.mutate(
-          (0.05 * (j / numOfMutatedBirdsPerATB)) / ((1 / 1.5) * this.generation)
+      //Also put a slightly mutated agent of that alltimebest agent
+      for (let j = 0; j < numOfMutatedAgentsPerATB; j++) {
+        let newAgent = new GeneticRequirement(this.allTimeBest[i].id + "*", 0, newAi.deepCopy());
+        newAgent.brain.mutate(
+          (0.05 * (j / numOfMutatedAgentsPerATB)) / ((1 / 1.5) * this.generation)
         );
-        birds.push(newBird);
+        agents.push(newAgent);
       }
     }
 
     //Do Crossovers
     for (let i = 0; i < numOfCrossovers; i++) {
-      let birdA = birds[Math.floor(Math.random() * (birds.length - 1))];
-      let birdB = birds[Math.floor(Math.random() * (birds.length - 1))];
+      let agentA = agents[Math.floor(Math.random() * (agents.length - 1))];
+      let agentB = agents[Math.floor(Math.random() * (agents.length - 1))];
 
-      let newAi = this.crossover(birdA, birdB);
-      let newBird = new GeneticRequirement("crossover - " + i, 0, newAi);
+      let newAi = this.crossover(agentA, agentB);
+      let newAgent = new GeneticRequirement("crossover - " + i, 0, newAi);
 
-      birds.push(newBird);
+      agents.push(newAgent);
     }
 
-    //Generate some random birds
-    for (let i = 0; i < numOfRandomBirds; i++) {
-      let newBird = new GeneticRequirement("Rndm - " + i, 0, new NeuralNetwork(birds[0].brain.getNumOfNeurons()));
-      birds.push(newBird);
+    //Generate some random agents
+    for (let i = 0; i < numOfRandomAgents; i++) {
+      let newAgent = new GeneticRequirement("Rndm - " + i, 0, new NeuralNetwork(agents[0].brain.getNumOfNeurons()));
+      agents.push(newAgent);
     }
 
-    //Generate and mutate new Birds from
-    for (let i = birds.length; i < this.numOfAgents; i++) {
+    //Generate and mutate new Agents from
+    for (let i = agents.length; i < this.numOfAgents; i++) {
       let probabilityIndex = this.getProbabilityIndex(
-        fittest.newBirds,
+        fittest.newAgents,
         fittest.probabilities
       );
-      let newAi = fittestBirds[probabilityIndex].brain.deepCopy();
-      let newBird = new GeneticRequirement(""+i,0,newAi);
-      newBird.brain.mutate(
+      let newAi = fittestAgents[probabilityIndex].brain.deepCopy();
+      let newAgent = new GeneticRequirement(""+i,0,newAi);
+      newAgent.brain.mutate(
         (0.5 * (i / this.numOfAgents)) / (0.2 * this.generation)
       );
-      birds.push(newBird);
+      agents.push(newAgent);
     }
 
     this.generation++;
 
-    return birds;
+    return agents;
   }
 
-  getFittestBirds(birds: GeneticRequirement[], topX: number) {
-    let newBirds: GeneticRequirement[] = [];
+  getFittestAgents(agents: GeneticRequirement[], topX: number) {
+    let newAgents: GeneticRequirement[] = [];
 
     for (let i = 0; i < topX; i++) {
-      newBirds.push(birds[i]);
+      newAgents.push(agents[i]);
     }
 
-    for (let bird of birds) {
+    for (let agent of agents) {
       let weakestIndex = 0;
-      let weakest = newBirds[weakestIndex];
-      for (let i = 0; i < newBirds.length; i++) {
+      let weakest = newAgents[weakestIndex];
+      for (let i = 0; i < newAgents.length; i++) {
         if (
-          newBirds[i].score >= weakest.score &&
-          newBirds[i].id != weakest.id
+          newAgents[i].score >= weakest.score &&
+          newAgents[i].id != weakest.id
         ) {
-          weakest = newBirds[i];
+          weakest = newAgents[i];
           weakestIndex = i;
         }
       }
 
-      if (bird.score > weakest.score && bird.id != weakest.id) {
-        newBirds[weakestIndex] = bird;
+      if (agent.score > weakest.score && agent.id != weakest.id) {
+        newAgents[weakestIndex] = agent;
       }
     }
 
-    return newBirds;
+    return newAgents;
   }
 
-  getRespawnProbabilitiesAndSum(birds: GeneticRequirement[], topX: number) {
+  getRespawnProbabilitiesAndSum(agents: GeneticRequirement[], topX: number) {
     let probabilities: number[] = [];
 
     let sum = 0;
     for (let i = 0; i < topX; i++) {
-      sum += birds[i].score;
+      sum += agents[i].score;
     }
 
     for (let i = 0; i < topX; i++) {
-      probabilities.push(birds[i].score / sum);
+      probabilities.push(agents[i].score / sum);
     }
 
     return {
-      newBirds: birds,
+      newAgents: agents,
       probabilities: probabilities,
       sumOfScore: sum,
     };
   }
 
-  updateBestBirds(newFittestBirds: GeneticRequirement[]) {
+  updateBestAgents(newFittestAgents: GeneticRequirement[]) {
     if (this.allTimeBest.length == 0) {
-      this.allTimeBest = newFittestBirds;
+      this.allTimeBest = newFittestAgents;
       return;
     }
 
-    for (let newBird of newFittestBirds) {
-      let weakestBird = this.allTimeBest[0];
+    for (let newAgent of newFittestAgents) {
+      let weakestAgent = this.allTimeBest[0];
       let weakestIndex = 0;
       // console.log("---------");
 
       for (let i = 0; i < this.allTimeBest.length; i++) {
         if (
-          this.allTimeBest[i].score <= weakestBird.score &&
-          this.allTimeBest[i].id != weakestBird.id
+          this.allTimeBest[i].score <= weakestAgent.score &&
+          this.allTimeBest[i].id != weakestAgent.id
         ) {
-          weakestBird = this.allTimeBest[i];
+          weakestAgent = this.allTimeBest[i];
           weakestIndex = i;
-          // console.log("found new weakest: " + weakestBird.id);
+          // console.log("found new weakest: " + weakestAgent.id);
         }
       }
       // console.log("---------");
 
-      if (this.allTimeBest[weakestIndex].score < newBird.score) {
-        if (!(this.allTimeBest[weakestIndex].id == newBird.id))
-          this.allTimeBest[weakestIndex] = newBird;
+      if (this.allTimeBest[weakestIndex].score < newAgent.score) {
+        if (!(this.allTimeBest[weakestIndex].id == newAgent.id))
+          this.allTimeBest[weakestIndex] = newAgent;
       }
     }
 
-    for (let bird of this.allTimeBest) {
-      bird.id = bird.id.replace("ATB - ", "");
-      bird.id = "ATB - " + bird.id;
+    for (let agent of this.allTimeBest) {
+      agent.id = agent.id.replace("ATB - ", "");
+      agent.id = "ATB - " + agent.id;
     }
   }
 
-  getProbabilityIndex(fittestBirds: GeneticRequirement[], probabilities: number[]) {
+  getProbabilityIndex(fittestAgents: GeneticRequirement[], probabilities: number[]) {
     let random = Math.random();
-    for (let j = 0; j < fittestBirds.length; j++) {
+    for (let j = 0; j < fittestAgents.length; j++) {
       if (random <= probabilities[j]) return j;
     }
 
-    return fittestBirds.length - 1;
+    return fittestAgents.length - 1;
   }
 
   setHighScore(score: number) {
@@ -203,8 +203,8 @@ export class GeneticAlgoFactory {
     this.prevHighScoreArray.push(score);
   }
 
-  crossover(birdA: GeneticRequirement, birdB: GeneticRequirement) {
-    return birdA.brain.crossover(birdB.brain);
+  crossover(agentA: GeneticRequirement, agentB: GeneticRequirement) {
+    return agentA.brain.crossover(agentB.brain);
   }
 
 }
