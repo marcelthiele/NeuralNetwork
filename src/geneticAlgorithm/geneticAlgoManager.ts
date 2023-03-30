@@ -12,7 +12,12 @@ export class GeneticAlgoFactory {
 
   allTimeBest: NeuralNetwork[] = [];
 
-  constructor(private numOfNeuralNets = 200) {}
+  constructor(
+    private numOfNeuralNets = 200,
+    public atbMutationRate = 0.05,
+    public fittestMutationRate = 0.1,
+    public linearGenerationFactor = 1
+  ) {}
 
   getAvgScore(neuralNets: NeuralNetwork[]) {
     let sumOfScore = 0;
@@ -38,7 +43,14 @@ export class GeneticAlgoFactory {
     let numOfCrossovers = 50;
     // console.log('fittest: ' + JSON.stringify(fittest.probabilities));
 
-    let fittestAIs: NeuralNetwork[] = this.getFittestAIs(neuralNets, neuralNetsToKeep);
+    let _atbMutationRate = this.atbMutationRate;
+    let _fittestMutationRate = this.fittestMutationRate;
+    let _linearGenerationFactor = this.linearGenerationFactor;
+
+    let fittestAIs: NeuralNetwork[] = this.getFittestAIs(
+      neuralNets,
+      neuralNetsToKeep
+    );
     this.updateBestNeuralNets(fittestAIs);
 
     let fittest = this.getRespawnProbabilitiesAndSum(
@@ -52,7 +64,7 @@ export class GeneticAlgoFactory {
     // Copy previous Best NeuralNets to Next generation
     for (let i = 0; i < neuralNetsToKeep; i++) {
       let newAi = fittestAIs[i].deepCopy();
-      newAi.id="ATB-"+i;
+      newAi.id = "ATB-" + i;
       neuralNets.push(newAi);
     }
 
@@ -64,20 +76,23 @@ export class GeneticAlgoFactory {
       for (let j = 0; j < numOfMutatedNeuralNetsPerATB; j++) {
         let newMutatedAi = newAi.deepCopy();
         newMutatedAi.mutate(
-          (0.05 * (j / numOfMutatedNeuralNetsPerATB)) / ((1 / 1.5) * this.generation)
+          (_atbMutationRate * (j / numOfMutatedNeuralNetsPerATB)) /
+            (_linearGenerationFactor * this.generation)
         );
-        newMutatedAi.id = "ATB-"+i+"-*";
+        newMutatedAi.id = "ATB-" + i + "-*";
         neuralNets.push(newMutatedAi);
       }
     }
 
     //Do Crossovers
     for (let i = 0; i < numOfCrossovers; i++) {
-      let neuralNetA = neuralNets[Math.floor(Math.random() * (neuralNets.length - 1))];
-      let neuralNetB = neuralNets[Math.floor(Math.random() * (neuralNets.length - 1))];
+      let neuralNetA =
+        neuralNets[Math.floor(Math.random() * (neuralNets.length - 1))];
+      let neuralNetB =
+        neuralNets[Math.floor(Math.random() * (neuralNets.length - 1))];
 
       let newAi = this.crossover(neuralNetA, neuralNetB);
-      newAi.id = "crsvr-"+i;
+      newAi.id = "crsvr-" + i;
 
       neuralNets.push(newAi);
     }
@@ -85,7 +100,7 @@ export class GeneticAlgoFactory {
     //Generate some random neuralNets
     for (let i = 0; i < numOfRandomNeuralNets; i++) {
       let newAI = new NeuralNetwork(fittestAIs[0].getNumOfNeurons());
-      newAI.id="rndm-"+i;
+      newAI.id = "rndm-" + i;
       neuralNets.push(newAI);
     }
 
@@ -97,9 +112,10 @@ export class GeneticAlgoFactory {
       );
       let newAi = fittestAIs[probabilityIndex].deepCopy();
       newAi.mutate(
-        (0.5 * (i / this.numOfNeuralNets)) / (0.2 * this.generation)
+        (_fittestMutationRate * (i / this.numOfNeuralNets)) /
+          (_linearGenerationFactor * this.generation)
       );
-      newAi.id = ""+i;
+      newAi.id = "" + i;
       neuralNets.push(newAi);
     }
 
@@ -190,7 +206,10 @@ export class GeneticAlgoFactory {
     }
   }
 
-  getProbabilityIndex(fittestNeuralNets: NeuralNetwork[], probabilities: number[]) {
+  getProbabilityIndex(
+    fittestNeuralNets: NeuralNetwork[],
+    probabilities: number[]
+  ) {
     let random = Math.random();
     for (let j = 0; j < fittestNeuralNets.length; j++) {
       if (random <= probabilities[j]) return j;
@@ -207,5 +226,4 @@ export class GeneticAlgoFactory {
   crossover(brainA: NeuralNetwork, brainB: NeuralNetwork) {
     return brainA.crossover(brainB);
   }
-
 }
