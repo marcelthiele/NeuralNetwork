@@ -124,4 +124,14 @@ export class NeuralNetwork {
   getNumOfNeurons(){
     return this.numOfNeurons;
   }
+
+  get dna(){
+    let ret = "";
+
+    for(let layer of this.layers){
+      ret += layer.serialize();
+    }
+
+    return ret;
+  }
 }

@@ -35,4 +35,17 @@ export class Layer {
         neuron.mutate(rate);
     }
   }
+
+  serialize(){
+    let hash = 0;
+
+    for(let neuron of this.neurons){
+      for(let i = 0; i < neuron.weights.length; i++){
+        hash = ((hash << 5) - hash)+neuron.weights[i];
+        hash |= 0;
+      }
+    }
+    console.log("hash: " + hash);
+    return hash;
+  }
 }
