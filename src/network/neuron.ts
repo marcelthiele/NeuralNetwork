@@ -1,4 +1,3 @@
-import { Connection } from './connection';
 import { Layer } from './layer';
 
 export class Neuron {
@@ -19,7 +18,7 @@ export class Neuron {
     }
   }
 
-  initRandomConnectionsFromLayer(prevLayer: Layer, connections?: Connection[]) {
+  initRandomConnectionsFromLayer(prevLayer: Layer) {
     this.prevNeurons = prevLayer.neurons;
     for (let neuron of prevLayer.neurons) {
       this.weights.push(Math.random() * 2 - 1);
