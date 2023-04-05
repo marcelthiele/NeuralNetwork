@@ -42,9 +42,9 @@ export class Layer {
     for(let neuron of this.neurons){
       for(let i = 0; i < neuron.weights.length; i++){
         hash = ((hash << 5) - hash)+neuron.weights[i];
-        hash |= 0;
       }
     }
+    hash |= 0;
     console.log("hash: " + hash);
     return hash;
   }

@@ -128,7 +128,8 @@ export class NeuralNetwork {
   get dna(){
     let ret = "";
 
-    for(let layer of this.layers){
+    for(let i = 1; i < this.layers.length; i++){
+      let layer = this.layers[i];
       ret += layer.serialize();
     }
 

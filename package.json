@@ -1,6 +1,6 @@
 {
   "name": "@marcelthiele/neuralnet-rl",
-  "version": "1.0.13",
+  "version": "1.0.17",
   "description": "A Neural Network for Reinforcement Learning in TypeScript",
   "main": "lib/src/index.js",
   "type": "module",
@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc",
     "prepublish": "npm run build",
-    "publish": "npm publish --access=public",
+    "publish_public": "npm publish --access=public",
     "publish_patch": "npm version patch",
     "publish_minor": "npm version minor",
     "publish_major": "npm version major"
