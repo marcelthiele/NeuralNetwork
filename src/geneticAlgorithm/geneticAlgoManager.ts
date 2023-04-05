@@ -75,10 +75,7 @@ export class GeneticAlgoFactory {
       //Also put a slightly mutated neuralNet of that alltimebest neuralNet
       for (let j = 0; j < numOfMutatedNeuralNetsPerATB; j++) {
         let newMutatedAi = newAi.deepCopy();
-        newMutatedAi.mutate(
-          (_atbMutationRate * (j / numOfMutatedNeuralNetsPerATB)) /
-            (_linearGenerationFactor * this.generation)
-        );
+        newMutatedAi.mutate(_atbMutationRate);
         newMutatedAi.id = "ATB-" + i + "-*";
         neuralNets.push(newMutatedAi);
       }
@@ -111,10 +108,7 @@ export class GeneticAlgoFactory {
         fittest.probabilities
       );
       let newAi = fittestAIs[probabilityIndex].deepCopy();
-      newAi.mutate(
-        (_fittestMutationRate * (i / this.numOfNeuralNets)) /
-          (_linearGenerationFactor * this.generation)
-      );
+      newAi.mutate(_fittestMutationRate);
       newAi.id = "" + i;
       neuralNets.push(newAi);
     }
