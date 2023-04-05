@@ -52,7 +52,7 @@ export class Neuron {
   mutate(rate: number) {
     this.bias = this.linearInterpolation(
       this.bias,
-      Math.random() * 2 - 1,
+      Math.random() > .5 ? 1 : -1,
       rate,
     );
     for (let i = 0; i < this.weights.length; i++) {
